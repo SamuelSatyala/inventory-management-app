@@ -3,28 +3,26 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# SQLite database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///inventory.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
 
-# -------------------- MODEL --------------------
+# ---------------- MODEL ----------------
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    image = db.Column(db.String(300))
 
 
-# Create database
+# Create DB
 with app.app_context():
     db.create_all()
 
 
-# -------------------- HOME / SEARCH --------------------
+# ---------------- HOME / SEARCH ----------------
 @app.route('/')
 def index():
     query = request.args.get('q')
@@ -39,13 +37,12 @@ def index():
     return render_template('index.html', products=products)
 
 
-# -------------------- ADD PRODUCT --------------------
+# ---------------- ADD ----------------
 @app.route('/add', methods=['POST'])
 def add():
     name = request.form['name']
     quantity = request.form['quantity']
     price = request.form['price']
-    image = request.form['image']
 
     if not name or int(quantity) < 0 or float(price) < 0:
         return "Invalid input"
@@ -53,8 +50,7 @@ def add():
     new_product = Product(
         name=name,
         quantity=quantity,
-        price=price,
-        image=image
+        price=price
     )
 
     db.session.add(new_product)
@@ -63,7 +59,7 @@ def add():
     return redirect('/')
 
 
-# -------------------- DELETE --------------------
+# ---------------- DELETE ----------------
 @app.route('/delete/<int:id>')
 def delete(id):
     product = Product.query.get(id)
@@ -72,14 +68,14 @@ def delete(id):
     return redirect('/')
 
 
-# -------------------- EDIT PAGE --------------------
+# ---------------- EDIT PAGE ----------------
 @app.route('/edit/<int:id>')
 def edit(id):
     product = Product.query.get(id)
     return render_template('edit.html', product=product)
 
 
-# -------------------- UPDATE PRODUCT --------------------
+# ---------------- UPDATE ----------------
 @app.route('/update/<int:id>', methods=['POST'])
 def update(id):
     product = Product.query.get(id)
@@ -87,7 +83,6 @@ def update(id):
     product.name = request.form['name']
     product.quantity = request.form['quantity']
     product.price = request.form['price']
-    product.image = request.form['image']
 
     db.session.commit()
 
